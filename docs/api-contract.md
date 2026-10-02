@@ -26,6 +26,38 @@
 
 ---
 
+## Users (Staff & Access Control — Phase 2)
+
+### GET /api/users
+| | |
+|---|---|
+| Auth | ADMIN |
+| 200 | { success: true, users: User[] } — safe projection (passwordHash omitted) |
+| 401/403 | Auth/role failure |
+
+### POST /api/users
+| | |
+|---|---|
+| Auth | ADMIN |
+| Body | { name: string, email: string, password: string (min 6), role: ADMIN\|STAFF\|CHEF, active?: boolean } |
+| Action | Hashes password with bcrypt; validates inputs (Rule 10) |
+| 201 | { success: true, user: User } |
+| 409 | User with this email already exists |
+| 422 | Validation error |
+
+### PATCH /api/users/:id
+| | |
+|---|---|
+| Auth | ADMIN |
+| Body | { name?: string, role?: ADMIN\|STAFF\|CHEF, active?: boolean, password?: string (min 6) } |
+| Action | Updates fields, re-hashes password if provided; prevents self-deactivation (Rule 10) |
+| 200 | { success: true, user: User } |
+| 400 | Self-deactivation forbidden |
+| 404 | User not found |
+| 422 | Validation error |
+
+---
+
 ## Menu
 
 ### GET /api/menu
@@ -108,6 +140,14 @@
 | Action | Re-signs QR JWT for the table (Rule 2) |
 | 200 | { success: true, table: Table } |
 | 404 | Table not found |
+
+### GET /api/tables/qr-sheet
+| | |
+|---|---|
+| Auth | ADMIN |
+| Action | Generates high-res QR code base64 Data URLs encoding /t/:qrToken for all tables (Rule 2) |
+| 200 | { success: true, tables: Array<{ _id, number, capacity, status, qrToken, qrUrl, qrDataUrl }> } |
+| 401/403 | Auth/role failure |
 
 ---
 

@@ -1,14 +1,15 @@
-﻿'use strict';
+'use strict';
 const express = require('express');
 const { body, param } = require('express-validator');
-const { create, list, update, verifyQR, regenerateQR } = require('../controllers/tableController');
+const { create, list, update, verifyQR, regenerateQR, qrSheet } = require('../controllers/tableController');
 const { verifyJWT, requireRole } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 
 const router = express.Router();
 
-// IMPORTANT: /qr/:qrToken must be declared before /:id to avoid route collision
+// Specific routes before parameterized /:id
 router.get('/qr/:qrToken', verifyQR);
+router.get('/qr-sheet', verifyJWT, requireRole('ADMIN'), qrSheet);
 
 router.get('/', verifyJWT, requireRole('ADMIN', 'STAFF'), list);
 

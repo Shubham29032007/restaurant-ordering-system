@@ -1,5 +1,6 @@
 'use strict';
 const jwt = require('jsonwebtoken');
+const QRCode = require('qrcode');
 const Table = require('../models/Table');
 
 async function create(req, res, next) {
@@ -72,4 +73,31 @@ async function regenerateQR(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { create, list, update, verifyQR, regenerateQR };
+async function qrSheet(req, res, next) {
+  try {
+    const tables = await Table.find().sort({ number: 1 });
+    const baseUrl = process.env.CLIENT_ORIGIN || `${req.protocol}://${req.get('host')}`;
+    const items = await Promise.all(
+      tables.map(async (table) => {
+        const url = `${baseUrl}/t/${table.qrToken}`;
+        const qrDataUrl = await QRCode.toDataURL(url, {
+          width: 320,
+          margin: 2,
+          color: { dark: '#0f172a', light: '#ffffff' },
+        });
+        return {
+          _id: table._id,
+          number: table.number,
+          capacity: table.capacity,
+          status: table.status,
+          qrToken: table.qrToken,
+          qrUrl: url,
+          qrDataUrl,
+        };
+      })
+    );
+    res.json({ success: true, tables: items });
+  } catch (err) { next(err); }
+}
+
+module.exports = { create, list, update, verifyQR, regenerateQR, qrSheet };

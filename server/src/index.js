@@ -12,6 +12,7 @@ const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/auth');
 const menuRoutes = require('./routes/menu');
 const tableRoutes = require('./routes/tables');
+const userRoutes = require('./routes/users');
 
 validateEnv();
 
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use('/api/auth',   authRoutes);
 app.use('/api/menu',   menuRoutes);
 app.use('/api/tables', tableRoutes);
+app.use('/api/users',  userRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 
